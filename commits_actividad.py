@@ -6,10 +6,9 @@ from datetime import datetime
 git_user_name = os.getenv('GIT_USER_NAME')
 git_user_email = os.getenv('GIT_USER_EMAIL')
 repo_path = os.getenv('REPO_PATH')
-access_token = os.getenv('ACCES_TOKEN')
 
 # Crear la URL remota con el Access Token de GitHub
-access_token = os.getenv('ACCES_TOKEN')  # Obtiene el token del entorno
+access_token = os.getenv('ACCESS_TOKEN')  # Obtiene el token del entorno
 if not access_token:
     print("Error: El token ACCES_TOKEN no está configurado. Verifica tus variables de entorno.")
     exit(1)
@@ -82,11 +81,6 @@ def hacer_commit(fecha, mensaje="Commit para Actividad"):
         f.write(f"Actividad en {fecha}\n")
     subprocess.run(["git", "add", "actividad.txt"], check=True)
     subprocess.run(["git", "commit", "-m", mensaje], check=True)
-
-# Realizar commits en las fechas indicadas
-fechas_commits = [
-    # Aquí pones las fechas como en tu ejemplo original
-]
 
 hoy = datetime.now().strftime('%Y-%m-%d')
 for fecha in fechas_commits:
