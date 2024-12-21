@@ -6,7 +6,7 @@ from datetime import datetime
 git_user_name = os.getenv('GIT_USER_NAME')
 git_user_email = os.getenv('GIT_USER_EMAIL')
 repo_path = os.getenv('REPO_PATH')
-access_token = os.getenv('ACCES_TOKEN') 
+access_token = os.getenv('ACCES_TOKEN')
 
 # Crear la URL remota con el Access Token de GitHub
 access_token = os.getenv('ACCES_TOKEN')  # Obtiene el token del entorno
@@ -43,31 +43,38 @@ fechas_commits = [
     '2025-12-20'
 ]
 
-# Crear y configurar el repositorio local
+# Verificar si el repositorio ya existe
 os.makedirs(repo_path, exist_ok=True)
 os.chdir(repo_path)
-subprocess.run(["git", "init"], check=True)
 
-# Configurar usuario de Git desde variables de entorno
+if not os.path.exists(".git"):
+    subprocess.run(["git", "init"], check=True)
+
+# Configurar usuario de Git
 subprocess.run(["git", "config", "user.name", git_user_name], check=True)
 subprocess.run(["git", "config", "user.email", git_user_email], check=True)
 
-# Asegurarse de que estamos en la rama 'main'
+# Configurar URL remota
+url = f"https://{access_token}@github.com/{git_user_name}/{repo_path}.git"
 try:
-    subprocess.run(["git", "checkout", "main"], check=True)  # Cambiar a 'main' si ya existe
+    subprocess.run(["git", "remote", "add", "origin", url], check=True)
 except subprocess.CalledProcessError:
-    subprocess.run(["git", "checkout", "-b", "main"], check=True)  # Crear 'main' si no existe
+    print("El remoto ya está configurado. Continuando...")
 
-# Haz un commit inicial si la rama 'main' está vacía
+# Actualizar el repositorio antes de realizar cambios
 try:
-    subprocess.run(["git", "log"], check=True)  # Verificar si ya hay commits en 'main'
+    subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
 except subprocess.CalledProcessError:
+    print("No se pudieron integrar los cambios remotos. Continúa con precaución.")
+
+# Crear un archivo de actividad si no existe
+if not os.path.exists("actividad.txt"):
     with open("actividad.txt", "w") as f:
         f.write("Commit inicial\n")
     subprocess.run(["git", "add", "actividad.txt"], check=True)
     subprocess.run(["git", "commit", "-m", "Commit inicial"], check=True)
 
-# Función para realizar un commit
+# Función para realizar commits
 def hacer_commit(fecha, mensaje="Commit para Actividad"):
     os.environ["GIT_AUTHOR_DATE"] = fecha + " 00:00:00"
     os.environ["GIT_COMMITTER_DATE"] = fecha + " 00:00:00"
@@ -77,43 +84,20 @@ def hacer_commit(fecha, mensaje="Commit para Actividad"):
     subprocess.run(["git", "commit", "-m", mensaje], check=True)
 
 # Realizar commits en las fechas indicadas
+fechas_commits = [
+    # Aquí pones las fechas como en tu ejemplo original
+]
+
 hoy = datetime.now().strftime('%Y-%m-%d')
 for fecha in fechas_commits:
     if fecha >= hoy:
         hacer_commit(fecha)
 
-# Crear la URL remota con el Access Token de GitHub
-url = f"https://{access_token}@github.com/{git_user_name}/{repo_path}.git"
-
-# Configurar el repositorio remoto (si no está configurado)
-try:
-    subprocess.run(["git", "remote", "add", "origin", url], check=True)
-except subprocess.CalledProcessError:
-    print("El remoto ya está configurado. Continuando...")
-
-# Actualizar la rama local antes de empujar
-try:
-    subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
-except subprocess.CalledProcessError:
-    print("No se pudieron integrar los cambios remotos. Continúa con precaución.")
-
-# Intentar el push normal
+# Empujar los cambios al remoto
 try:
     subprocess.run(["git", "push", "-u", "origin", "main"], check=True)
 except subprocess.CalledProcessError:
-    print("El push falló. Forzando el push...")
-    try:
-        subprocess.run(["git", "push", "-u", "origin", "main", "--force"], check=True)
-    except subprocess.CalledProcessError:
-        print("El push forzado falló. Verifica los logs.")
+    print("El push falló. Revisa los conflictos antes de forzar un push.")
 
-# Debugging adicional: Verificar el estado del repositorio
-try:
-    print("\n--- Estado del repositorio ---")
-    subprocess.run(["git", "status"], check=True)
-    print("\n--- Últimos commits ---")
-    subprocess.run(["git", "log", "--oneline", "-5"], check=True)
-    print("\n--- Configuración remota ---")
-    subprocess.run(["git", "remote", "-v"], check=True)
-except subprocess.CalledProcessError:
-    print("Error al verificar el estado del repositorio.")
+# Verificar el estado del repositorio
+subprocess.run(["git", "status"], check=True)
