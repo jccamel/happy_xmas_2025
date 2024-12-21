@@ -53,6 +53,21 @@ if not os.path.exists(".git"):
 subprocess.run(["git", "config", "user.name", git_user_name], check=True)
 subprocess.run(["git", "config", "user.email", git_user_email], check=True)
 
+# Determinar el nombre de la rama principal (main o master)
+try:
+    # Intenta cambiar a la rama 'main'
+    subprocess.run(["git", "checkout", "main"], check=True)
+    branch_name = "main"
+except subprocess.CalledProcessError:
+    try:
+        # Si falla, intenta cambiar a la rama 'master'
+        subprocess.run(["git", "checkout", "master"], check=True)
+        branch_name = "master"
+    except subprocess.CalledProcessError:
+        # Si ambas fallan, crea la rama 'main'
+        subprocess.run(["git", "checkout", "-b", "main"], check=True)
+        branch_name = "main"
+
 # Configurar URL remota
 url = f"https://{access_token}@github.com/{git_user_name}/{repo_path}.git"
 try:
@@ -62,7 +77,7 @@ except subprocess.CalledProcessError:
 
 # Actualizar el repositorio antes de realizar cambios
 try:
-    subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
+    subprocess.run(["git", "pull", "origin", branch_name, "--rebase"], check=True)
 except subprocess.CalledProcessError:
     print("No se pudieron integrar los cambios remotos. Continúa con precaución.")
 
@@ -89,7 +104,7 @@ for fecha in fechas_commits:
 
 # Empujar los cambios al remoto
 try:
-    subprocess.run(["git", "push", "-u", "origin", "main"], check=True)
+    subprocess.run(["git", "push", "-u", "origin", branch_name], check=True)
 except subprocess.CalledProcessError:
     print("El push falló. Revisa los conflictos antes de forzar un push.")
 
