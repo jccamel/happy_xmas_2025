@@ -11,7 +11,7 @@ access_token = os.getenv('ACCES_TOKEN')
 # Crear la URL remota con el Access Token de GitHub
 access_token = os.getenv('ACCES_TOKEN')  # Obtiene el token del entorno
 if not access_token:
-    print("Error: El token GITHUB_TOKEN no está configurado. Verifica tus variables de entorno.")
+    print("Error: El token ACCES_TOKEN no está configurado. Verifica tus variables de entorno.")
     exit(1)
 
 # Lista de fechas de commits
