@@ -1,0 +1,34 @@
+name: Commit Activity
+
+# Ejecutar este workflow en un horario
+on:
+  schedule:
+    - cron: '0 12 * * *' # Este cron job ejecuta el workflow todos los días a las 12:00 UTC
+  workflow_dispatch: # Permite ejecutar el workflow manualmente desde GitHub
+
+jobs:
+  commit_activity:
+    name: Run Commit Activity Script
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3 # Clona el repositorio para que los scripts puedan acceder a él
+
+    - name: Set up Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y python3
+
+    - name: Run Commit Script
+      env:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }} # Token de acceso para el repositorio
+        GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+        GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+        REPO_PATH: ${{ secrets.REPO_PATH }}
+      run: |
+        python3 commits_actividad.py
