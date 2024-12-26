@@ -90,17 +90,18 @@ if not os.path.exists("actividad.txt"):
 
 # Función para realizar commits
 def hacer_commit(fecha, mensaje="Commit para Actividad"):
-    os.environ["GIT_AUTHOR_DATE"] = fecha + " 00:00:00"
-    os.environ["GIT_COMMITTER_DATE"] = fecha + " 00:00:00"
+    os.environ["GIT_AUTHOR_DATE"] = fecha
+    os.environ["GIT_COMMITTER_DATE"] = fecha
     with open("actividad.txt", "a") as f:
         f.write(f"Actividad en {fecha}\n")
     subprocess.run(["git", "add", "actividad.txt"], check=True)
     subprocess.run(["git", "commit", "-m", mensaje], check=True)
 
-hoy = datetime.now().strftime('%Y-%m-%d')
-for fecha in fechas_commits:
-    if fecha >= hoy:
-        hacer_commit(fecha)
+fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+print('Fecha actual: ', fecha)
+
+if fecha.split(' ')[0] in fechas_commits:
+    hacer_commit(fecha)
 
 # Empujar los cambios al remoto
 try:
